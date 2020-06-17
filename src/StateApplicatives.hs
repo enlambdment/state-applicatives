@@ -19,7 +19,12 @@ instance Eq a => Eq (State String a) where
         p' = runState st' $ ""
     in  p == p'
 
-instance Show a => Show (State String a) where
+-- we won't set any type constraints requiring Show s, Show a 
+-- because 'instance Show (State s a)' won't be used except to
+-- get rid of e.g.
+--  "No instance for (Show (State Char Int))
+--       arising from a use of ‘quickCheck’"
+instance Show (State s a) where
   show st = "<placeholder>"
 
 exec :: State s a -> s -> s
@@ -50,7 +55,7 @@ instance Applicative (State s) where
   (<*>) :: State s (a -> b)
            -> State s a 
            -> State s b
-  (<*>) = undefined
+  -- sf (<*>) sx = undefined
 
   -- 1. 
   -- sf <*> sx = 
@@ -83,18 +88,18 @@ instance Applicative (State s) where
 
 
   -- 3.
-  -- sf <*> sx = 
-  --   State $ \x ->
-  --     let (f, x1) = (runState sf $ x)       -- (a -> b, s)
-  --         (a, x2) = (runState sx $ x1)      -- (a,      s)
-  --     in  (f a, x2)
+  sf <*> sx = 
+    State $ \x ->
+      let (f, x1) = (runState sf $ x)       -- (a -> b, s)
+          (a, x2) = (runState sx $ x1)      -- (a,      s)
+      in  (f a, x2)
 
   -- applicative:
-  -- identity:     +++ OK, passed 500 tests.
-  -- composition:  +++ OK, passed 500 tests.
-  -- homomorphism: +++ OK, passed 500 tests.
-  -- interchange:  +++ OK, passed 500 tests.
-  -- functor:      +++ OK, passed 500 tests.
+  --    identity:     +++ OK, passed 500 tests.
+  --    composition:  +++ OK, passed 500 tests.
+  --    homomorphism: +++ OK, passed 500 tests.
+  --    interchange:  +++ OK, passed 500 tests.
+  --    functor:      +++ OK, passed 500 tests.
 
 
   -- 4.
@@ -105,11 +110,11 @@ instance Applicative (State s) where
   --     in  (f a, x2)
 
   -- applicative:
-  -- identity:     +++ OK, passed 500 tests.
-  -- composition:  +++ OK, passed 500 tests.
-  -- homomorphism: +++ OK, passed 500 tests.
-  -- interchange:  +++ OK, passed 500 tests.
-  -- functor:      +++ OK, passed 500 tests.
+  --    identity:     +++ OK, passed 500 tests.
+  --    composition:  +++ OK, passed 500 tests.
+  --    homomorphism: +++ OK, passed 500 tests.
+  --    interchange:  +++ OK, passed 500 tests.
+  --    functor:      +++ OK, passed 500 tests.
 
 
 
@@ -121,7 +126,7 @@ instance Applicative (State s) where
   --         (a, _) = (runState sx $ x)      -- (a,      s)
   --     in  (f a, y)
 
-  --   applicative:
+  -- applicative:
   --   identity:     *** Failed! Falsified (after 3 tests):  
   -- <placeholder>
   --   composition:  *** Failed! Falsified (after 2 tests):  
@@ -160,7 +165,7 @@ instance Applicative (State s) where
   --         (a, y) = (runState sx $ x)      -- (a,      s)
   --     in  (f a, snd $ runState sx $ y)
 
-  --   applicative:
+  -- applicative:
   --   identity:     *** Failed! Falsified (after 2 tests):  
   -- <placeholder>
   --   composition:  *** Failed! Falsified (after 4 tests):  
@@ -182,7 +187,7 @@ instance Applicative (State s) where
   --         (a, _) = (runState sx $ x)      -- (a,      s)
   --     in  (f a, snd $ runState sf $ y)
 
-  --   applicative:
+  -- applicative:
   --   identity:     *** Failed! Falsified (after 2 tests):  
   -- <placeholder>
   --   composition:  *** Failed! Falsified (after 5 tests):  
@@ -204,7 +209,7 @@ instance Applicative (State s) where
   --         (a, _) = (runState sx $ x)      -- (a,      s)
   --     in  (f a, x)
 
-  --   applicative:
+  -- applicative:
   --   identity:     *** Failed! Falsified (after 2 tests):  
   -- <placeholder>
   --   composition:  +++ OK, passed 500 tests.
