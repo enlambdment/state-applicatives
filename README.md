@@ -57,7 +57,7 @@ But how many of those ways satisfy the `Applicative` laws?
 
 ## Counting possible implementations
 
-There are various ways of writing an implementation for `(<*>)` that will type-check. Instead of exhaustively listing out these possibilities,[^1] we may limit ourselves to considering just those implementations which use each of `sf`, `sx` exactly once, to produce terms `:: a -> b`, `:: a` respectively (needed for the `:: b` value) as well as produce states (which we have to decide what to do with.) Our rough argument in favor of considering _only_ the implementations which use each of `sf`, `sx` exactly once could be seen as an appeal to symmetry: we wouldn't want the operator `(<*>)` to "prefer" either input over the other for no clear reason, unless we later came across a reason to do otherwise. Both inputs `sf`, `sx` should participate in the overall process to an equal extent.
+There are various ways of writing an implementation for `(<*>)` that will type-check. Instead of exhaustively listing out these possibilities,<sup><a href="#fn1" id="ref1">1</a></sup> we may limit ourselves to considering just those implementations which use each of `sf`, `sx` exactly once, to produce terms `:: a -> b`, `:: a` respectively (needed for the `:: b` value) as well as produce states (which we have to decide what to do with.) Our rough argument in favor of considering _only_ the implementations which use each of `sf`, `sx` exactly once could be seen as an appeal to symmetry: we wouldn't want the operator `(<*>)` to "prefer" either input over the other for no clear reason, unless we later came across a reason to do otherwise. Both inputs `sf`, `sx` should participate in the overall process to an equal extent.
 
 With this principle in mind, we could list out the possibilities as follows: 
 
@@ -78,7 +78,7 @@ From these 9 implementations, only 2 are entirely lawful Applicative instances: 
 
 ## Merely lawful vs. canonical Applicative for `State s :: * -> *` type constructor
 
-Despite the existence of multiple ways to implement the apply operation, `(<*>)`, for `State s` that satisfy the Applicative laws (as verified using `quickcheck` / `checkers`), the canonical implementation[^2] is in fact:
+Despite the existence of multiple ways to implement the apply operation, `(<*>)`, for `State s` that satisfy the Applicative laws (as verified using `quickcheck` / `checkers`), the canonical implementation<sup><a href="#fn2" id="ref2">2</a></sup> is in fact:
 
 ```
 sf (<*>) sx = State $ \s ->
@@ -108,14 +108,15 @@ For example, the familiar
 filter :: (a ->   Bool ) -> [a] ->   [a]
 ```
 
-*TODO, RETURN TO THIS*
+TODO
 
 ***
-[^1]: (which would be impossible in any case because, given any state `t` which has been arrived at in the course of the `let ...`-portion of the function body, we could choose instead of returning a pair `(f x, t)` to return the pair `(f x, runState q1 $ t)` where `q1` is either of the inputs to `(<*>)`, or `(f x, runState q2 $ runState q1 $ t)`, or so on _ad infinitum_)
 
-[^2]: This is a simplified account of the `State s` Applicative's implementation: as the following, via `ghci`, makes clear:
+<sup id="fn1">1. (which would be impossible in any case because, given any state <code>t</code> which has been arrived at in the course of the <code>let ...</code>-portion of the function body, we could choose instead of returning a pair <code>(f x, t)</code> to return the pair <code>(f x, runState q1 $ t)</code> where <code>q1</code> is either of the inputs to <code>(<*>)</code>, or <code>(f x, runState q2 $ runState q1 $ t)</code>, or so on <em>ad infinitum</em>)<a href="#ref1" title="Jump back to footnote 1">↩</a></sup>
 
-```
+<sup id="fn2">2. This is a simplified account of the <code>State s</code> Applicative's implementation: as the following, via <code>ghci</code>, makes clear:
+
+<code>
 > import Control.Monad.State
 > :info State
 type State s = StateT s Data.Functor.Identity.Identity :: * -> *
@@ -128,6 +129,6 @@ newtype StateT s (m :: * -> *) a
 instance [safe] (Functor m, Monad m) => Applicative (StateT s m)
   -- Defined in ‘Control.Monad.Trans.State.Lazy’
   [...]
-```
+</code>
 
-the type constructor `State` is "officially" implemented in terms of the higher-order type constructor `StateT` (in particuar, as the type constructor due to instantiating `StateT` with the `Identity` functor, which is also a monad.) See [here](https://hackage.haskell.org/package/transformers-0.5.6.2/docs/src/Control.Monad.Trans.State.Lazy.html#line-204) for the relevant `(<*>)` implementation.
+the type constructor <code>State</code> is "officially" implemented in terms of the higher-order type constructor <code>StateT</code> (in particuar, as the type constructor due to instantiating <code>StateT</code> with the <code>Identity</code> functor, which is also a monad.) See [here](https://hackage.haskell.org/package/transformers-0.5.6.2/docs/src/Control.Monad.Trans.State.Lazy.html#line-204) for the relevant <code>(<*>)</code> implementation.<a href="#ref2" title="Jump back to footnote 2">↩</a></sup>
