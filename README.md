@@ -112,7 +112,7 @@ TODO
 
 ***
 
-<sup id="fn1">1. (which would be impossible in any case because, given any state <code>t</code> which has been arrived at in the course of the <code>let ...</code>-portion of the function body, we could choose instead of returning a pair <code>(f x, t)</code> to return the pair <code>(f x, runState q1 $ t)</code> where <code>q1</code> is either of the inputs to <code>(<*>)</code>, or <code>(f x, runState q2 $ runState q1 $ t)</code>, or so on <em>ad infinitum</em>)<a href="#ref1" title="Jump back to footnote 1">↩</a>
+<sup id="fn1">1. (which would be impossible in any case because, given any state <code>t</code> which has been arrived at in the course of the <code>let ...</code>-portion of the function body, we could choose instead of returning a pair <code>(f x, t)</code> to return the pair <code>(f x, runState q1 $ t)</code> where <code>q1</code> is either of the inputs to <code>(&lt; * &gt;)</code>, or <code>(f x, runState q2 $ runState q1 $ t)</code>, or so on <em>ad infinitum</em>)<a href="#ref1" title="Jump back to footnote 1">↩</a>
 </sup>
 <br>
 <br>
