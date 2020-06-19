@@ -116,8 +116,7 @@ TODO
 </sup>
 <br>
 <br>
-<sup id="fn2">2. This is a simplified account of the <code>State s</code> Applicative's implementation: as the following, via <code>ghci</code>, makes clear:
-<br>
+<sup id="fn2">2. This is a simplified account of the <code>State s</code> Applicative's implementation: as the following, via <code>ghci</code>, makes clear:<br>
 <pre>
 <code>
 > import Control.Monad.State
@@ -133,6 +132,4 @@ instance [safe] (Functor m, Monad m) => Applicative (StateT s m)
   -- Defined in ‘Control.Monad.Trans.State.Lazy’
   [...]
 </code>
-</pre>
-<br>
-the type constructor <code>State</code> is "officially" implemented in terms of the higher-order type constructor <code>StateT</code> (in particuar, as the type constructor due to instantiating <code>StateT</code> with the <code>Identity</code> functor, which is also a monad.) See <a href="https://hackage.haskell.org/package/transformers-0.5.6.2/docs/src/Control.Monad.Trans.State.Lazy.html#line-204">here</a> for the relevant <code>(<*>)</code> implementation.<a href="#ref2" title="Jump back to footnote 2">↩</a></sup>
+</pre><br>the type constructor <code>State</code> is "officially" implemented in terms of the higher-order type constructor <code>StateT</code> (in particuar, as the type constructor due to instantiating <code>StateT</code> with the <code>Identity</code> functor, which is also a monad.) See <a href="https://hackage.haskell.org/package/transformers-0.5.6.2/docs/src/Control.Monad.Trans.State.Lazy.html#line-204">here</a> for the relevant <code>(<*>)</code> implementation.<a href="#ref2" title="Jump back to footnote 2">↩</a></sup>
