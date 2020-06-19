@@ -1,5 +1,7 @@
 # state-applicatives
 
+_The original impetus for this discussion, and the code for `filtering`, `foldRight`, `distinct` etc., were due to working through the System F functional programming course in Haskell, [fp-course](https://github.com/system-f/fp-course)_
+
 Given the following:
 
 ```
@@ -53,30 +55,79 @@ But how many of those ways satisfy the `Applicative` laws?
 --   `∀u y. u <*> pure y = pure ($ y) <*> u`
 ```
 
-## Summary
+## Counting possible implementations
 
-Given a term `st :: State s a` and a term `x :: s` to apply its "unpacked" function `runState st` to, there is exactly one "result state" i.e. `exec st x` which results.
+There are various ways of writing an implementation for `(<*>)` that will type-check. Instead of exhaustively listing out these possibilities,[^1] we may limit ourselves to considering just those implementations which use each of `sf`, `sx` exactly once, to produce terms `:: a -> b`, `:: a` respectively (needed for the `:: b` value) as well as produce states (which we have to decide what to do with.) Our rough argument in favor of considering _only_ the implementations which use each of `sf`, `sx` exactly once could be seen as an appeal to symmetry: we wouldn't want the operator `(<*>)` to "prefer" either input over the other for no clear reason, unless we later came across a reason to do otherwise. Both inputs `sf`, `sx` should participate in the overall process to an equal extent.
 
-Considering, then, the use of `<*>` on two terms 
+With this principle in mind, we could list out the possibilities as follows: 
+
+1. Use `sf` first, then `sx` on the resulting state. In the state part of the output pair, use 
+  a. `s`
+  b. `exec sf $ s`
+  c. `exec sx $ exec sf $ s`
+2. Use `sx` first, then `sf` on the resulting state. In the state part of the output pair, use
+  a. `s`
+  b. `exec sx $ s`
+  c. `exec sf $ exec sx $ s`
+3. Use `sf`, `sx` both at the same time.In the state part of the output pair, use
+  a. `s`
+  b. `exec sf $ s`
+  c. `exec sx $ s`
+
+From these 9 implementations, only 2 are entirely lawful Applicative instances: 1c. and 2c. This immediately suggests that what these two implementations have in common, namely their "threading-through" of an initial state through each step of the computation, resulting in a final reported state that involves the execution of both `sf` and `sx`, is somehow central to what it means to be an Applicative instance. This point will be revisited later below.
+
+## Merely lawful vs. canonical Applicative for `State s :: * -> *` type constructor
+
+Despite the existence of multiple ways to implement the apply operation, `(<*>)`, for `State s` that satisfy the Applicative laws (as verified using `quickcheck` / `checkers`), the canonical implementation[^2] is in fact:
 
 ```
-sf :: State s (a -> b)
-sx :: State s a
+sf (<*>) sx = State $ \s ->
+  let (f, s' ) = runState sf $ s
+      (x, s'') = runState sx $ s'
+  in  (f x, s'')
+
 ```
 
-each must be run on an input `x :: s` in order to get terms `eval sf x :: a -> b`, `eval sx x :: a` that can be used to arrive at the `b`-part of the output pair `(b, s)`. This process gives rise to two terms 
+However, a more persuasive argument in favor of this implementation might be an illustration of how this one succeeds, where others fail. In order to lay the ground for such a demonstration, it will be useful first to motivate and give an example of how applicative instances serve to provide a _context_ surrounding values and computations performed using them.
+
+## Applicatives as contexts
+
+Some suggestive language to describe the context corresponding to certain simple applicatives might look like:
+
+| `k :: * -> *` | `Applicative k :: * -> *`   | Description |
+| :---          | :---                        | :--- |
+| `[]`          | `Applicative []`            | The applicative representing _nondeterminism_: zero, one or many values | 
+| `Maybe`       | `Applicative Maybe`         | The applicative representing _potential failure_: zero values in case of failure, or one value in case of success |
+| `State s`     | `Applicative (State s)`     | The applicative representing _tracking a state_: as a result is being computed, a state is being kept track of, and made available for use by the computation |
+
+That an applicative can serve as some sort of context "surrounding" a value is at least made possible by the fact that it is a typeclass which admits as members higher-kinded types of kind `* -> *`: however, the nature of that context will be determined by the implementation of the type constructor `k`'s `Applicative` instance.
+
+For example, the familiar
 
 ```
-y := exec sf x :: s
-z := exec sx x :: s
+filter :: (a ->   Bool ) -> [a] ->   [a]
 ```
 
-and we can either 
+*TODO, RETURN TO THIS*
 
-1. use _neither_ of `y`, `z` i.e. simply give back the original `x` as the resulting state of `exec (sf <*> sx) x`, unchanged; running `sf` on it; or running `sx` on it. 3 ways in total to arrive at a putative term for the value of `exec (sf <*> sx) x` this way;
-2. use `y` - either giving it back unchanged, etc. 3 ways in total, etc.
-3. or use `z` - either giving it back unchanged, etc. 3 ways in total, etc.
+***
+[^1]: (which would be impossible in any case because, given any state `t` which has been arrived at in the course of the `let ...`-portion of the function body, we could choose instead of returning a pair `(f x, t)` to return the pair `(f x, runState q1 $ t)` where `q1` is either of the inputs to `(<*>)`, or `(f x, runState q2 $ runState q1 $ t)`, or so on _ad infinitum_)
 
-This results in 3 * 3 = 9 different possible implementations for this Applicative instance's `(<*>)` that will _typecheck_; of these, 4 will pass property testing which makes use of the `applicative` test batch offered by the _checkers_ library.
+[^2]: This is a simplified account of the `State s` Applicative's implementation: as the following, via `ghci`, makes clear:
 
-These lawful implementations have in common that _both `sf`, `sx` participate in the computation of the final state, `exec (sf <*> sx) x`, that results_; however, they differ with respect to the _order_ in which they are applied to `x`, and in whether or not any intermediate state is used to produce either or both of the terms `:: a -> b`, `:: a`.
+```
+> import Control.Monad.State
+> :info State
+type State s = StateT s Data.Functor.Identity.Identity :: * -> *
+    -- Defined in ‘Control.Monad.Trans.State.Lazy’
+> :info StateT
+type role StateT nominal representational nominal
+newtype StateT s (m :: * -> *) a
+  = StateT {runStateT :: s -> m (a, s)}
+    -- Defined in ‘Control.Monad.Trans.State.Lazy’
+instance [safe] (Functor m, Monad m) => Applicative (StateT s m)
+  -- Defined in ‘Control.Monad.Trans.State.Lazy’
+  [...]
+```
+
+the type constructor `State` is "officially" implemented in terms of the higher-order type constructor `StateT` (in particuar, as the type constructor due to instantiating `StateT` with the `Identity` functor, which is also a monad.) See [here](https://hackage.haskell.org/package/transformers-0.5.6.2/docs/src/Control.Monad.Trans.State.Lazy.html#line-204) for the relevant `(<*>)` implementation.

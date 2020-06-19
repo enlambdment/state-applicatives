@@ -55,6 +55,64 @@ instance Applicative (State s) where
   (<*>) :: State s (a -> b)
            -> State s a 
            -> State s b
+  sf <*> sx = State $ \s ->
+
+  --1. Use sf first, then sx on what results
+    let (f, s' ) = runState sf $ s
+        (x, s'') = runState sx $ s'
+    in  (f x, 
+          -- s)    -- a.
+          -- s')   -- b.
+          s'')  -- c.   <-- This is the *canonical implementation for 'Applicative (State s)'.*
+
+  --2. Use sx first, then sf on what results
+    -- let (x, s' ) = runState sx $ s
+    --     (f, s'') = runState sf $ s'
+    -- in  (f x, 
+          -- s)    -- a.
+          -- s')   -- b.
+          -- s'')  -- c.
+
+  --3. Use sf, sx at the same time
+    -- let (f, s1') = runState sf $ s 
+    --     (x, s2') = runState sx $ s 
+    -- in  (f x,
+          -- s)    -- a.
+          -- s1')  -- b.
+          -- s2')  -- c.
+
+{- Results, checking instance laws:
+
+1a. Fails identity, composition,              functor
+1b. Fails identity, composition, interchange, functor
+1c. Passes
+
+2a. Fails identity, composition,              functor
+2b. Fails           composition, interchange
+2c. Passes
+
+3a. Fails identity,                           functor
+3b. Fails identity, composition, interchange, functor
+3c. Fails                        interchange
+
+-}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+{-
+
   -- sf (<*>) sx = undefined
 
   -- 1. 
@@ -218,3 +276,5 @@ instance Applicative (State s) where
   --   functor:      *** Failed! Falsified (after 3 tests):  
   -- <function>
   -- <placeholder>
+
+-}
