@@ -543,7 +543,7 @@ sf (<*>) sx = State $ \s ->
   ...
 ```
 
-`sf` and `sx` need not arise from `pure` generally: they may well _not_ be indifferent to the state which either one receives. In that case, we had better pay attention to the state which results from applying each one, in turn:<sup><a href="#fn4" id="ref4">4</a></sup>
+`sf` and `sx` need not arise from `pure` generally: they may well _not_ be indifferent to the state which either one receives. In that case, we had better pay attention to the state which results from applying each one, in turn:<sup><a href="#fn5" id="ref5">5</a></sup>
 
 ```
 sf (<*>) sx = State $ \s ->
@@ -725,6 +725,9 @@ instance [safe] (Functor m, Monad m) => Applicative (StateT s m)
   [...]
 </code>
 </pre><br>the type constructor <code>State</code> is "officially" implemented in terms of the higher-order type constructor <code>StateT</code> (in particuar, as the type constructor due to instantiating <code>StateT</code> with the <code>Identity</code> functor, which is also a monad.) See <a href="https://hackage.haskell.org/package/transformers-0.5.6.2/docs/src/Control.Monad.Trans.State.Lazy.html#line-204">here</a> for the relevant <code>(<*>)</code> implementation.<a href="#ref2" title="Jump back to footnote 2">↩</a></sup>
+<br>
 <sup id="fn3">3. In reality, maintaining a list of values encountered would accomplish the same thing, so long as we took care to check each element, as we encountered it, for membership in the list so far, and refrain from adding it again if present: but this search is faster on a set (<em>O(log n)</em>) vs. a list (<em>O(n)</em>) in general, and furthermore a set is mathematically speaking the appropriate way to represent a collection of values in which each occurs at most once.<a href="#ref3" title="Jump back to footnote 3">↩</a>
+<br>
 <sup id="fn4">4. It is <em>not true in general</em> that, given a value of type <code>f a</code>, we can hope to extract an <code>a</code> from it. For instance, when <code>f := Maybe</code>, we can't perform such an extraction safely because not every data constructor for the type <code>Maybe a</code> <em>witnesses</em> the type variable <em>a</em> (in particular, <em>Nothing</em> the nullary data constructor is the culprit here.) However, in the case of what is essentially a function type, <code>State s [a] ~ (s -> ([a], s))</code>, we hold out hope that an <code>[a]</code> can be obtained so long as we apply the term to the appropriate <code>s</code>.<a href="#ref4" title="Jump back to footnote 4">↩</a>
-<sup id="fn4">4. This corresponds to 1c. in the listing out of applicatives which we considered at the start. 2c., the other lawful implementation, corresponds to threading state through the two processes in the <em>opposite</em> order, <code>sx</code> then <code>sf</code>.<a href="#ref4" title="Jump back to footnote 4">↩</a>
+<br>
+<sup id="fn5">5. This corresponds to 1c. in the listing out of applicatives which we considered at the start. 2c., the other lawful implementation, corresponds to threading state through the two processes in the <em>opposite</em> order, <code>sx</code> then <code>sf</code>.<a href="#ref5" title="Jump back to footnote 5">↩</a>
