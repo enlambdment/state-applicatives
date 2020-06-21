@@ -61,13 +61,13 @@ But how many of those ways satisfy the `Applicative` laws?
 
 [Applicatives as contexts](#applicatives-as-contexts)
 
-[Implementation of filtering & an example using Maybe applicative](#implementation-of-filtering--an-example-using-maybe-applicative)
+[Implementation of filtering & an example using `Maybe` applicative](#implementation-of-filtering--an-example-using-maybe-applicative)
 
-[The State s applicative & an example with tracked-state-as-context](#the-state-s-applicative--an-example-with-tracked-state-as-context)
+[The `State s` applicative & an example with tracked-state-as-context](#the-state-s-applicative--an-example-with-tracked-state-as-context)
 
 [Completing the analogy of "values seen so far" context as an applicative](#completing-the-analogy-of-values-seen-so-far-context-as-an-applicative)
 
-[Mechanics of the State s applicative](#mechanics-of-the-state-s-applicative)
+[Mechanics of the `State s` applicative](#mechanics-of-the-state-s-applicative)
 
 ***
 
