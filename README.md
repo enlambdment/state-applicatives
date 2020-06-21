@@ -55,6 +55,16 @@ But how many of those ways satisfy the `Applicative` laws?
 --   `∀u y. u <*> pure y = pure ($ y) <*> u`
 ```
 
+[Counting possible implementations](#counting-possible-implementations)
+[Merely lawful vs. canonical Applicative for `State s :: * -> *` type constructor](#merely-lawful-vs-canonical-applicative-for-state-s------type-constructor)
+[Applicatives as contexts](#applicatives-as-contexts)
+[Implementation of filtering & an example using Maybe applicative](#implementation-of-filtering--an-example-using-maybe-applicative)
+[The State s applicative & an example with tracked-state-as-context](#the-state-s-applicative--an-example-with-tracked-state-as-context)
+[Completing the analogy of "values seen so far" context as an applicative](#completing-the-analogy-of-values-seen-so-far-context-as-an-applicative)
+[Mechanics of the State s applicative](#mechanics-of-the-state-s-applicative)
+
+***
+
 ## Counting possible implementations
 
 There are various ways of writing an implementation for `(<*>)` that will type-check. Instead of exhaustively listing out these possibilities,<sup><a href="#fn1" id="ref1">1</a></sup> we may limit ourselves to considering just those implementations which use each of `sf`, `sx` exactly once, to produce terms `:: a -> b`, `:: a` respectively (needed for the `:: b` value) as well as produce states (which we have to decide what to do with.) Our rough argument in favor of considering _only_ the implementations which use each of `sf`, `sx` exactly once could be seen as an appeal to symmetry: we wouldn't want the operator `(<*>)` to "prefer" either input over the other for no clear reason, unless we later came across a reason to do otherwise. Both inputs `sf`, `sx` should participate in the overall process to an equal extent.
